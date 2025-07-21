@@ -59,16 +59,15 @@ public class PlayerProtocol {
      * @param player        the Bukkit player
      * @param relativeTo    the NettyChannel to position relative to
      * @param newChannel    the NettyChannel representing the new handler
-     * @param handler       the Netty ChannelHandler instance to add
      * @param pipelineState the pipeline state (FIRST, LAST, BEFORE, AFTER, REPLACE)
      */
     public void addNettyChannel(@NonNull Player player,
                                 @NonNull NettyChannel relativeTo,
                                 @NonNull NettyChannel newChannel,
-                                @NonNull ChannelHandler handler,
                                 @NonNull PipelineState pipelineState) {
         var channel = getChannel(player);
         if (channel == null) return;
+        var handler = new PacketDecoder(player);
 
         try {
             switch (pipelineState) {

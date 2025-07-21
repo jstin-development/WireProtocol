@@ -2,7 +2,6 @@ package net.wireprotocol.protocol;
 
 import lombok.AllArgsConstructor;
 import org.bukkit.entity.Player;
-import io.netty.channel.ChannelHandler;
 
 /**
  * A hook for injecting and ejecting protocol handlers into a player's network channel.
@@ -21,15 +20,16 @@ public class ProtocolHook implements Injectable {
      * Adds the handler after the WIREPROTOCOL_DECODER by default.
      */
     @Override
-    public void inject(final ChannelHandler channelHandler) {
+    public void inject() {
         var channel = playerProtocol.getChannel(player);
         if (channel == null || playerProtocol.existsNettyChannel(player, INJECT_HANDLER)) {
             // Already injected or channel doesn't exist
             return;
         }
+        var handler = new PacketDecoder(player);
 
         // Inject the handler after WIREPROTOCOL_DECODER
-        playerProtocol.addNettyChannel(player, INJECT_HANDLER, NettyChannel.PACKET_SUPPRESSOR, channelHandler, PipelineState.AFTER);
+        playerProtocol.addNettyChannel(player, INJECT_HANDLER, NettyChannel.PACKET_SUPPRESSOR, PipelineState.AFTER);
     }
 
     /**
