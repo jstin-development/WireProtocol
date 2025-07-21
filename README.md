@@ -1,4 +1,4 @@
-# WireProtocol
+# wireprotocol.WireProtocol
 
 A lightweight, high-performance Java library for low-level packet interception and protocol handling.
 
@@ -24,5 +24,5 @@ Add the latest release to your project dependencies (Maven/Gradle/etc.).
 
 ```java
 // Example usage here
-WireProtocol wireProtocol = WireProtocolLibrary.get();
+wireprotocol.WireProtocol wireProtocol = wireprotocol.WireProtocolLibrary.get();
 // Initialize and start listening to packets
