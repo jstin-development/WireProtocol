@@ -1,4 +1,4 @@
-# wireprotocol.WireProtocol
+# WireProtocol
 
 A lightweight, high-performance Java library for low-level packet interception and protocol handling.
 
@@ -9,7 +9,7 @@ A lightweight, high-performance Java library for low-level packet interception a
 - Precise packet interception and manipulation
 - Clean and extensible API design
 - Minimal dependencies for easy integration
-- Suitable for network tools, proxies, and Minecraft plugins
+- Suitable for network tools Minecraft plugins
 
 ---
 
