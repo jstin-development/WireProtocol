@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_8_R3.Packet;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
@@ -14,12 +15,14 @@ import java.lang.reflect.Field;
 public class PacketReceiveEvent extends Event {
 
     private Packet<?> packet;
+    private Player player;
     private boolean cancelled;
     private ByteBuf byteBuf;
     private static final HandlerList handlers = new HandlerList();
 
-    public PacketReceiveEvent(Packet<?> packet) {
+    public PacketReceiveEvent(Packet<?> packet, Player player) {
         this.packet = packet;
+        this.player = player;
         this.byteBuf = this.extractByteBuf(packet);
     }
 
@@ -39,7 +42,6 @@ public class PacketReceiveEvent extends Event {
                 try {
                     return (ByteBuf) field.get(packet);
                 } catch (IllegalAccessException ignored) {
-                    // Ignore this exception
                 }
             }
         }

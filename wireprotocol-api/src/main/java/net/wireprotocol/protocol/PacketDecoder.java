@@ -20,7 +20,7 @@ public class PacketDecoder extends MessageToMessageDecoder<Packet<?>> {
         // This method is called when a packet is received.
         // It decodes the packet and adds it to the list for further processing.
 
-        PacketReceiveEvent packetReceiveEvent = new PacketReceiveEvent(packet);
+        PacketReceiveEvent packetReceiveEvent = new PacketReceiveEvent(packet, this.player);
         Bukkit.getPluginManager().callEvent(packetReceiveEvent);
 
         if (packetReceiveEvent.isCancelled()) return;
