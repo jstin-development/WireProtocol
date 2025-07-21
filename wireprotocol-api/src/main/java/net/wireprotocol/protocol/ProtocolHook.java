@@ -30,6 +30,7 @@ public class ProtocolHook implements Injectable {
 
         // Inject the handler after WIREPROTOCOL_DECODER
         playerProtocol.addNettyChannel(player, INJECT_HANDLER, NettyChannel.PACKET_SUPPRESSOR, PipelineState.AFTER);
+        //channel.pipeline().addAfter("decoder", "wireprotocol_decoder", new PacketDecoder(player));
     }
 
     /**

@@ -67,28 +67,48 @@ public class PlayerProtocol {
                                 @NonNull PipelineState pipelineState) {
         var channel = getChannel(player);
         if (channel == null) return;
+
+        var pipeline = channel.pipeline();
         var handler = new PacketDecoder(player);
 
         try {
             switch (pipelineState) {
-                case AFTER -> channel.pipeline().addAfter(relativeTo.handlerName(), newChannel.handlerName(), handler);
-                case BEFORE -> channel.pipeline().addBefore(relativeTo.handlerName(), newChannel.handlerName(), handler);
-                case LAST -> channel.pipeline().addLast(newChannel.handlerName(), handler);
-                case FIRST -> channel.pipeline().addFirst(newChannel.handlerName(), handler);
-                case REPLACE -> {
-                    if (channel.pipeline().get(relativeTo.handlerName()) != null) {
-                        channel.pipeline().replace(relativeTo.handlerName(), newChannel.handlerName(), handler);
+                case AFTER -> {
+                    if (pipeline.get(relativeTo.handlerName()) != null) {
+                        pipeline.addAfter(relativeTo.handlerName(), newChannel.handlerName(), handler);
                     } else {
-                        channel.pipeline().addLast(newChannel.handlerName(), handler);
+                        // fallback or error
+                        pipeline.addAfter("decoder", newChannel.handlerName(), handler);
+                    }
+                }
+                case BEFORE -> {
+                    if (pipeline.get(relativeTo.handlerName()) != null) {
+                        pipeline.addBefore(relativeTo.handlerName(), newChannel.handlerName(), handler);
+                    } else {
+                        pipeline.addAfter("decoder", newChannel.handlerName(), handler);
+                    }
+                }
+                case LAST -> pipeline.addLast(newChannel.handlerName(), handler);
+                case FIRST -> pipeline.addFirst(newChannel.handlerName(), handler);
+                case REPLACE -> {
+                    if (pipeline.get(relativeTo.handlerName()) != null) {
+                        pipeline.replace(relativeTo.handlerName(), newChannel.handlerName(), handler);
+                    } else {
+                        pipeline.addAfter("decoder", newChannel.handlerName(), handler);
                     }
                 }
             }
         } catch (IllegalArgumentException exception) {
-            String message = String.format("Failed to add handler '%s' relative to '%s': %s",
-                    newChannel.handlerName(), relativeTo.handlerName(), exception.getMessage());
+            String message = String.format(
+                    "Failed to add handler '%s' relative to '%s': %s",
+                    newChannel.handlerName(),
+                    relativeTo.handlerName(),
+                    exception.getMessage()
+            );
             throw new IllegalArgumentException(message, exception);
         }
     }
+
 
     /**
      * Closes the Netty Channel for the player if it is open.
