@@ -14,10 +14,10 @@ import org.bukkit.event.HandlerList;
 @Getter
 public class PacketReceiveEvent extends Event {
 
-    private Packet<?> packet;
-    private Player player;
+    private final Packet<?> packet;
+    private final Player player;
+    private final ByteBuf byteBuf;
     private boolean cancelled;
-    private ByteBuf byteBuf;
     private static final HandlerList handlers = new HandlerList();
 
     public PacketReceiveEvent(Packet<?> packet, Player player) {
@@ -30,32 +30,22 @@ public class PacketReceiveEvent extends Event {
         if (packet == null) return null;
 
         try {
-            // Create a new empty buffer to write the packet to
-            ByteBuf byteBuf = Unpooled.buffer();
 
-            // Wrap it in PacketDataSerializer (NMS helper)
-            PacketDataSerializer serializer = new PacketDataSerializer(byteBuf);
-
-            // Determine protocol from your channel or context
-            EnumProtocol protocol = ((CraftPlayer)player).getHandle().playerConnection.networkManager.channel.attr(NetworkManager.c).get();
-
-            // Get the packet ID for this packet class and direction
-            int packetId = protocol.a(EnumProtocolDirection.SERVERBOUND, packet);
+            var byteBuf = Unpooled.buffer();
+            var serializer = new PacketDataSerializer(byteBuf);
+            var protocol = ((CraftPlayer)player).getHandle().playerConnection.networkManager.channel.attr(NetworkManager.c).get();
+            var packetId = protocol.a(EnumProtocolDirection.SERVERBOUND, packet);
 
             if (packetId < 0) {
-                // Packet not registered
                 return null;
             }
 
-            // Write packet ID (varint)
             serializer.b(packetId);
-
-            // Serialize packet data into buffer
             packet.b(serializer);
 
             return byteBuf;
-        } catch (Exception e) {
-            System.err.println("Failed to serialize packet: " + e.getMessage());
+        } catch (Exception exception) {
+            System.err.println("Failed to serialize packet: " + exception.getMessage());
             return null;
         }
     }

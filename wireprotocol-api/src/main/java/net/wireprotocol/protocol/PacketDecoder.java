@@ -23,9 +23,8 @@ public class PacketDecoder extends MessageToMessageDecoder<Packet<?>> {
         PacketReceiveEvent packetReceiveEvent = new PacketReceiveEvent(packet, this.player);
         Bukkit.getPluginManager().callEvent(packetReceiveEvent);
 
-        if (packetReceiveEvent.isCancelled()) return;
-
-
-        list.add(packet);
+        if (!packetReceiveEvent.isCancelled()) {
+            list.add(packet);
+        }
     }
 }
