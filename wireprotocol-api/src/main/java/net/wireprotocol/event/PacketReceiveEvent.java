@@ -1,16 +1,14 @@
 package net.wireprotocol.event;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import lombok.Getter;
 import lombok.Setter;
-import net.minecraft.server.v1_8_R3.Packet;
+import net.minecraft.server.v1_8_R3.*;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 @Setter
 @Getter
@@ -28,73 +26,40 @@ public class PacketReceiveEvent extends Event {
         this.byteBuf = this.getByteBufFromPacket(packet);
     }
 
-    /**
-     * Uses reflection to extract the ByteBuf field from the packet.
-     * Assumes the ByteBuf is stored in a field of type ByteBuf.
-     *
-     * @param packet the packet to inspect
-     * @return the ByteBuf if found, otherwise null
-     */
-    private final ClassValue<List<Field>> BYTE_BUF_FIELDS_CACHE = new ClassValue<>() {
-        @Override
-        protected List<Field> computeValue(Class<?> type) {
-            List<Field> fields = new ArrayList<>();
-            Class<?> clazz = type;
-            while (clazz != null && clazz != Object.class) {
-                for (Field field : clazz.getDeclaredFields()) {
-                    if (ByteBuf.class.isAssignableFrom(field.getType())) {
-                        field.setAccessible(true);
-                        fields.add(field);
-                    }
-                }
-                clazz = clazz.getSuperclass();
-            }
-            return fields;
-        }
-    };
-
-    /**
-     * Extracts the first found ByteBuf from a Minecraft packet.
-     * @param packet The packet to inspect.
-     * @return The ByteBuf if found, or null if none exists.
-     */
     public ByteBuf getByteBufFromPacket(Packet<?> packet) {
         if (packet == null) return null;
 
-        for (Field field : BYTE_BUF_FIELDS_CACHE.get(packet.getClass())) {
-            try {
-                Object value = field.get(packet);
-                if (value instanceof ByteBuf) {
-                    return (ByteBuf) value;
-                }
-            } catch (IllegalAccessException ignored) {
-                // Skip inaccessible fields (shouldn't happen since we setAccessible)
+        try {
+            // Create a new empty buffer to write the packet to
+            ByteBuf byteBuf = Unpooled.buffer();
+
+            // Wrap it in PacketDataSerializer (NMS helper)
+            PacketDataSerializer serializer = new PacketDataSerializer(byteBuf);
+
+            // Determine protocol from your channel or context
+            EnumProtocol protocol = ((CraftPlayer)player).getHandle().playerConnection.networkManager.channel.attr(NetworkManager.c).get();
+
+            // Get the packet ID for this packet class and direction
+            int packetId = protocol.a(EnumProtocolDirection.SERVERBOUND, packet);
+
+            if (packetId < 0) {
+                // Packet not registered
+                return null;
             }
+
+            // Write packet ID (varint)
+            serializer.b(packetId);
+
+            // Serialize packet data into buffer
+            packet.b(serializer);
+
+            return byteBuf;
+        } catch (Exception e) {
+            System.err.println("Failed to serialize packet: " + e.getMessage());
+            return null;
         }
-        return null;
     }
 
-    /**
-     * Extracts all ByteBufs from a Minecraft packet (useful if multiple exist).
-     * @param packet The packet to inspect.
-     * @return A list of ByteBufs (empty if none found).
-     */
-    public List<ByteBuf> getAllByteBufsFromPacket(Packet<?> packet) {
-        List<ByteBuf> buffers = new ArrayList<>();
-        if (packet == null) return buffers;
-
-        for (Field field : BYTE_BUF_FIELDS_CACHE.get(packet.getClass())) {
-            try {
-                Object value = field.get(packet);
-                if (value instanceof ByteBuf) {
-                    buffers.add((ByteBuf) value);
-                }
-            } catch (IllegalAccessException ignored) {
-                // Skip inaccessible fields
-            }
-        }
-        return buffers;
-    }
 
     @Override
     public HandlerList getHandlers() {
