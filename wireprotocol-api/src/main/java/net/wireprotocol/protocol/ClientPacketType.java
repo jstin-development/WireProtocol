@@ -21,7 +21,7 @@ public enum ClientPacketType {
     STEER_VEHICLE(PacketPlayInSteerVehicle.class),
     CLOSE_WINDOW(PacketPlayInCloseWindow.class),
     CLICK_WINDOW(PacketPlayInWindowClick.class),
-    PLACE_HOLDER(PacketPlayInEnchantItem.class),
+    ENCHANT_ITEM(PacketPlayInEnchantItem.class),
     SET_CREATIVE_SLOT(PacketPlayInSetCreativeSlot.class),
     PLUGIN_MESSAGE(PacketPlayInCustomPayload.class),
     TRANSACTION(PacketPlayInTransaction.class),
