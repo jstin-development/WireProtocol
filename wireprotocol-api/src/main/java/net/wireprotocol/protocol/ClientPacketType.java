@@ -15,6 +15,8 @@ public enum ClientPacketType {
     PLAYER_POSITION_AND_LOOK(PacketPlayInFlying.PacketPlayInPositionLook.class),
     BLOCK_DIG(PacketPlayInBlockDig.class),
     BLOCK_PLACE(PacketPlayInBlockPlace.class),
+    ABILITIES(PacketPlayInAbilities.class),
+    TAB_COMPLETE(PacketPlayInTabComplete.class),
     HELD_ITEM_SLOT(PacketPlayInHeldItemSlot.class),
     ARM_ANIMATION(PacketPlayInArmAnimation.class),
     ENTITY_ACTION(PacketPlayInEntityAction.class),

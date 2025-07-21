@@ -3,7 +3,6 @@ package net.wireprotocol.wrapper;
 import net.minecraft.server.v1_8_R3.PacketPlayInBlockPlace;
 import net.minecraft.server.v1_8_R3.BlockPosition;
 import net.minecraft.server.v1_8_R3.ItemStack;
-import net.minecraft.server.v1_8_R3.EnumDirection;
 
 public class ClientBoundBlockPlaceWrapper implements PacketWrapper {
 
@@ -18,6 +17,10 @@ public class ClientBoundBlockPlaceWrapper implements PacketWrapper {
      */
     public BlockPosition getPosition() {
         return packet.a();
+    }
+
+    public int getFace() {
+        return packet.getFace();
     }
 
     /**
