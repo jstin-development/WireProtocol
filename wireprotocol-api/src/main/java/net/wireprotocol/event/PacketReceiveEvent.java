@@ -4,16 +4,19 @@ import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_8_R3.Packet;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
 
 import java.lang.reflect.Field;
 
 @Setter
 @Getter
-public class PacketReceiveEvent {
+public class PacketReceiveEvent extends Event {
 
     private Packet<?> packet;
     private boolean cancelled;
     private ByteBuf byteBuf;
+    private static final HandlerList handlers = new HandlerList();
 
     public PacketReceiveEvent(Packet<?> packet) {
         this.packet = packet;
@@ -41,5 +44,14 @@ public class PacketReceiveEvent {
             }
         }
         return null;
+    }
+
+    @Override
+    public HandlerList getHandlers() {
+        return handlers;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 }
