@@ -5,6 +5,7 @@ import io.netty.buffer.Unpooled;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.server.v1_8_R3.*;
+import net.wireprotocol.protocol.ClientPacketType;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -54,6 +55,10 @@ public class PacketReceiveEvent extends Event {
     @Override
     public HandlerList getHandlers() {
         return handlers;
+    }
+
+    public ClientPacketType getPacketType() {
+        return ClientPacketType.fromPacket(packet);
     }
 
     public static HandlerList getHandlerList() {
