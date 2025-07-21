@@ -1,6 +1,7 @@
 package net.wireprotocol.protocol;
 
 import lombok.AllArgsConstructor;
+import net.wireprotocol.WireProtocolLibrary;
 import org.bukkit.entity.Player;
 
 /**
@@ -26,7 +27,7 @@ public class ProtocolHook implements Injectable {
             // Already injected or channel doesn't exist
             return;
         }
-        var handler = new PacketDecoder(player);
+        var handler = new PacketDecoder(player, WireProtocolLibrary.get().getPacketEventManager());
 
         // Inject the handler after WIREPROTOCOL_DECODER
         playerProtocol.addNettyChannel(player, INJECT_HANDLER, NettyChannel.PACKET_SUPPRESSOR, PipelineState.AFTER);

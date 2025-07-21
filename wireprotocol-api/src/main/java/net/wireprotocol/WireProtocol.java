@@ -1,10 +1,12 @@
 package net.wireprotocol;
 
+import lombok.Getter;
 import net.minecraft.server.v1_8_R3.Packet;
+import net.wireprotocol.protocol.PacketEventManager;
 import net.wireprotocol.protocol.PlayerProtocol;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -12,26 +14,37 @@ import java.util.function.Consumer;
  */
 public class WireProtocol {
 
-    /** Registered packet listeners. */
-    private final List<Consumer<Packet<?>>> listeners = new ArrayList<>();
+    /** Registered packet listeners (thread-safe). */
+    private final List<Consumer<Packet<?>>> listeners = new CopyOnWriteArrayList<>();
 
-    /** PlayerProtocol instance for handling player channel interactions. */
+    /**
+     * -- GETTER --
+     *  Gets the PacketEventManager instance.
+     *  You may want to expose this to register your own event listeners.
+     */
+    @Getter
+    private final PacketEventManager packetEventManager = new PacketEventManager();
+
     private final PlayerProtocol playerProtocol = new PlayerProtocol();
 
-    /** Singleton instance of wireprotocol.WireProtocol. */
-    private static WireProtocol instance;
+    /** Volatile singleton instance for thread safety. */
+    private static volatile WireProtocol instance;
 
     /** Private constructor for singleton pattern. */
     private WireProtocol() {}
 
     /**
-     * Gets the singleton instance of wireprotocol.WireProtocol.
+     * Gets the singleton instance of WireProtocol.
      *
      * @return the singleton instance
      */
     public static WireProtocol getInstance() {
         if (instance == null) {
-            instance = new WireProtocol();
+            synchronized (WireProtocol.class) {
+                if (instance == null) {
+                    instance = new WireProtocol();
+                }
+            }
         }
         return instance;
     }
@@ -42,17 +55,26 @@ public class WireProtocol {
      * @param listener a Consumer that accepts packets
      */
     public void registerListener(Consumer<Packet<?>> listener) {
-        listeners.add(listener);
+        if (listener != null) {
+            listeners.add(listener);
+        }
     }
 
     /**
-     * Called internally when a packet is received, dispatching to all registered listeners.
+     * Dispatches the received packet to all registered listeners.
      *
      * @param packet the packet received
      */
-    public void onPacketReceived(Packet<?> packet) {
-        for (var listener : listeners) {
-            listener.accept(packet);
+    public void dispatchPacket(Packet<?> packet) {
+        if (packet == null) return;
+
+        for (Consumer<Packet<?>> listener : listeners) {
+            try {
+                listener.accept(packet);
+            } catch (Exception exception) {
+                System.err.println("Exception in packet listener: " + exception.getMessage());
+                exception.fillInStackTrace();
+            }
         }
     }
 
@@ -64,4 +86,5 @@ public class WireProtocol {
     public PlayerProtocol playerProtocol() {
         return playerProtocol;
     }
+
 }

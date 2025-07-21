@@ -3,6 +3,7 @@ package net.wireprotocol.protocol;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import lombok.NonNull;
+import net.wireprotocol.WireProtocolLibrary;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
@@ -69,7 +70,7 @@ public class PlayerProtocol {
         if (channel == null) return;
 
         var pipeline = channel.pipeline();
-        var handler = new PacketDecoder(player);
+        var handler = new PacketDecoder(player, WireProtocolLibrary.get().getPacketEventManager());
 
         try {
             switch (pipelineState) {
