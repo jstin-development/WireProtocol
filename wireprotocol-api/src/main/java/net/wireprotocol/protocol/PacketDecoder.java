@@ -2,33 +2,41 @@ package net.wireprotocol.protocol;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import lombok.AllArgsConstructor;
 import net.minecraft.server.v1_8_R3.Packet;
-import net.wireprotocol.WireProtocolLibrary;
-import net.wireprotocol.event.PacketEvent;
 import org.bukkit.entity.Player;
+import net.wireprotocol.event.PacketEvent;
 
 import java.util.List;
 
-@AllArgsConstructor
-public class PacketDecoder extends MessageToMessageDecoder<Packet<?>> {
+public final class PacketDecoder extends MessageToMessageDecoder<Packet<?>> {
 
     private final Player player;
     private final PacketEventManager eventManager;
 
+    // Initialize ThreadLocal without player reference
+    private final ThreadLocal<PacketEvent> eventCache = new ThreadLocal<>();
+
+    public PacketDecoder(Player player, PacketEventManager eventManager) {
+        this.player = player;
+        this.eventManager = eventManager;
+    }
+
     @Override
-    protected void decode(ChannelHandlerContext channelHandlerContext, Packet<?> packet, List<Object> list) {
-        // This method is called when a packet is received.
-        // It decodes the packet and adds it to the list for further processing.
-
-        var event = new PacketEvent(player, packet);
-        var packetEventManager = WireProtocolLibrary.get().getPacketEventManager();
-
-        packetEventManager.call(event);
-        if (!event.isCancelled()) {
-            list.add(packet);
+    protected void decode(ChannelHandlerContext ctx, Packet<?> packet, List<Object> out) {
+        // Get or create event object for this thread
+        var event = eventCache.get();
+        if (event == null) {
+            event = new PacketEvent(player, packet);
+            eventCache.set(event);
         }
+        eventManager.call(event);
+        if (!event.isCancelled()) {
+            out.add(packet);
+        }
+    }
 
-
+    @Override
+    public void handlerRemoved(ChannelHandlerContext channelHandlerContext) {
+        this.eventCache.remove(); // Prevent memory leaks
     }
 }
