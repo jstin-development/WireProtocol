@@ -24,5 +24,14 @@ Add the latest release to your project dependencies (Maven/Gradle/etc.).
 
 ```java
 // Example usage here
-wireprotocol.WireProtocol wireProtocol = wireprotocol.WireProtocolLibrary.get();
+Main class ->
+    private WireProtocol wireProtocol;
+    
+    @Override
+    public void onEnable() {
+        this.wireProtocol = WireProtocolLibrary.get();
+        // Register packet listener -> basePackage = where your packet listener are located at
+        this.wireProtocol.getPacketEventManager().registerAllListeners("net.stella.dev.wireprotocol.example.packetcheck");
+        // done -
+    }
 // Initialize and start listening to packets
